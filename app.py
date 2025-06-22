@@ -1,14 +1,10 @@
 from flask import Flask, request, jsonify
 from transformers import pipeline
 import os, requests
-from dotenv import load_dotenv
 
 app = Flask(__name__)
 
-load_dotenv()
-HF_TOKEN = os.getenv("HF_TOKEN")
-
-sentiment = pipeline("text-classification", model="Chaz1003/FELBERT")
+sentiment = pipeline("text-classification", model="Chaz1003/FELBERT", use_auth_token=False)
 summarizer = pipeline("summarization")
 LTR_URL = "http://localhost:5000"
 # LTR_URL = "https://libretranslate.de"
