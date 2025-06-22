@@ -1,8 +1,12 @@
 from flask import Flask, request, jsonify
 from transformers import pipeline
-import requests
+import os, requests
 
 app = Flask(__name__)
+
+load_dotenv()
+HF_TOKEN = os.getenv("HF_TOKEN")
+
 sentiment = pipeline("text-classification", model="Chaz1003/FELBERT")
 summarizer = pipeline("summarization")
 LTR_URL = "http://localhost:5000"
