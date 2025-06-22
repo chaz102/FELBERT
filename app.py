@@ -4,8 +4,8 @@ import os, requests
 
 app = Flask(__name__)
 
-sentiment = pipeline("text-classification", model="Chaz1003/FELBERT", use_auth_token=False)
-summarizer = pipeline("summarization")
+sentiment = pipeline("text-classification", model="Chaz1003/FELBERT")
+summarizer = pipeline("summarization", model="google/pegasus-xsum")
 LTR_URL = "http://localhost:5000"
 # LTR_URL = "https://libretranslate.de"
 
