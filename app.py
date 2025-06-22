@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from transformers import pipeline
 import os, requests
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
