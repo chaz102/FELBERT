@@ -1,29 +1,62 @@
-from transformers import pipeline
 from flask import Flask, request, jsonify
+from transformers import pipeline
+import requests
 
 app = Flask(__name__)
-classifier = pipeline("text-classification", model="Chaz1003/FELBERT")
+sentiment = pipeline("text-classification", model="Chaz1003/FELBERT")
+summarizer = pipeline("summarization")
+LTR_URL = "http://localhost:5000"
+# LTR_URL = "https://libretranslate.de"
 
-@app.route("/", methods=["GET"])
-def home():
-    return "Sentiment API is running"
+@app.route("/batch-analyze", methods=["POST"])
+def batch_analyze():
+    comments = request.json.get("comments", [])
+    results = []
+    translated_texts = []
 
-@app.route("/predict", methods=["POST"])
-def predict():
-    data = request.json
-    user_input = data.get("text", "")
-    
-    # Run model prediction
-    result = classifier(user_input)[0]
-    label = result["label"]
-    score = round(result["score"] * 100, 2)
+    for comment in comments:
+        # 1. Detect language
+        lang = requests.post(f"{LTR_URL}/detect", json={"q": comment}).json()[0]["language"]
 
-    sentiment = "Negative" if label == "LABEL_0" else "Positive"
+        # 2. Translate to English
+        if lang != "en":
+            tr = requests.post(f"{LTR_URL}/translate", json={
+                "q": comment,
+                "source": lang,
+                "target": "en"
+            }).json()
+            eng = tr["translatedText"]
+        else:
+            eng = comment
 
-    # Format for Dialogflow
+        translated_texts.append(eng)
+
+        # 3. Analyze sentiment
+        res = sentiment(eng)[0]
+        label = "Negative" if res["label"] == "LABEL_0" else "Positive"
+        score = round(res["score"] * 100, 2)
+
+        results.append({
+            "original": comment,
+            "translated": eng,
+            "sentiment": label,
+            "confidence": score
+        })
+
+    long_text = " ".join(translated_texts)
+
+    # 4. Summarize comments
+    summary = summarizer(long_text, max_length=100, min_length=40, do_sample=False)[0]["summary_text"]
+
+    # 5. Suggest action
+    improve_prompt = "Based on the following feedback, suggest ways to improve the event: " + long_text
+    improvements = summarizer(improve_prompt, max_length=100, min_length=40, do_sample=False)[0]["summary_text"]
+
     return jsonify({
-        "fulfillmentText": f"{sentiment} with {score}% confidence"
+        "results": results,
+        "summary": summary,
+        "suggestions": improvements
     })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(debug=True)
