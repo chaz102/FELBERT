@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # Load pipelines
 sentiment = pipeline("text-classification", model="Chaz1003/FELBERT")
-summarizer = pipeline("summarization", model="google/pegasus-xsum")
+summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
 
 LTR_URL = os.getenv("LTR_URL", "http://localhost:5000")
 
