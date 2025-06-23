@@ -9,7 +9,7 @@ app = Flask(__name__)
 sentiment = pipeline("text-classification", model="Chaz1003/FELBERT")
 summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
 
-LTR_URL = os.getenv("LTR_URL", "http://localhost:5000")
+LTR_URL = os.getenv("LTR_URL", "http://localhost:4000")
 
 @app.route("/batch-analyze", methods=["POST"])
 def batch_analyze():
