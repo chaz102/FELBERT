@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from transformers import pipeline
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 # Load sentiment model
 sentiment = pipeline("text-classification", model="Chaz1003/FELBERT")
